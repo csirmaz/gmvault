@@ -31,6 +31,7 @@ import gmv.gmvault_utils as gmvault_utils
 import gmv.gmvault as gmvault
 import gmv.gmvault_export as gmvault_export
 import gmv.collections_utils as collections_utils
+import gmv.gmsql as gmsql
 
 from gmv.cmdline_utils  import CmdLineParser
 from gmv.credential_utils import CredentialHelper
@@ -713,6 +714,8 @@ class GMVaultLauncher(object):
         else:
             raise ValueError("Unknown synchronisation mode %s. Please use full (default), quick or custom.")
         
+        
+        gmsql.GMSQL.close()
         
         #print error report
         LOG.critical(syncer.get_operation_report())

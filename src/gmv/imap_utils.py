@@ -223,10 +223,10 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
     IMAP_BODY_PEEK     = 'BODY.PEEK[]' #get body without setting msg as seen
 
     #get the body info without setting msg as seen
-    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]' 
+    IMAP_HEADER_PEEK_FIELDS = 'BODY.PEEK[HEADER.FIELDS (MESSAGE-ID SUBJECT FROM TO X-GMAIL-RECEIVED)]' 
 
     #key used to find these fields in the IMAP Response
-    IMAP_HEADER_FIELDS_KEY      = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT X-GMAIL-RECEIVED)]'
+    IMAP_HEADER_FIELDS_KEY       = 'BODY[HEADER.FIELDS (MESSAGE-ID SUBJECT FROM TO X-GMAIL-RECEIVED)]'
     
     #GET_IM_UID_RE
     APPENDUID         = r'^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'

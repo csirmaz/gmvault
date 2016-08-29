@@ -34,6 +34,7 @@ import gmv.collections_utils as collections_utils
 import gmv.gmvault_utils as gmvault_utils
 import gmv.imap_utils as imap_utils
 import gmv.credential_utils as credential_utils
+import gmv.gmsql as gmsql
 
 LOG = log_utils.LoggerFactory.get_logger('gmvault_db')
 
@@ -56,13 +57,19 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
     MSGID_K      = 'msg_id'
     XGM_RECV_K   = 'x_gmail_received'
 
-    HF_MSGID_PATTERN       = r"[M,m][E,e][S,s][S,s][a,A][G,g][E,e]-[I,i][D,d]:\s+<(?P<msgid>.*)>"
-    HF_SUB_PATTERN         = r"[S,s][U,u][b,B][J,j][E,e][C,c][T,t]:\s+(?P<subject>.*)\s*"
-    HF_XGMAIL_RECV_PATTERN = r"[X,x]-[G,g][M,m][A,a][I,i][L,l]-[R,r][E,e][C,c][E,e][I,i][V,v][E,e][D,d]:\s+(?P<received>.*)\s*"
+    HF_MSGID_PATTERN       = r"[Mm][Ee][Ss][Ss][Aa][Gg][Ee]-[Ii][Dd]:\s+<(?P<msgid>.*)>"
+    HF_SUB_PATTERN         = r"[Ss][Uu][bB][Jj][Ee][Cc][Tt]:\s+(?P<subject>.*)\s*"
+    HF_XGMAIL_RECV_PATTERN = r"[Xx]-[Gg][Mm][Aa][Ii][Ll]-[Rr][Ee][Cc][Ee][Ii][Vv][Ee][Dd]:\s+(?P<received>.*)\s*"
+
+    HF_FROM_PATTERN      = r"[Ff][Rr][Oo][Mm]:\s+(?P<from>.*)"
+    HF_TO_PATTERN        = r"[Tt][Oo]:\s+(?P<to>.*)"
 
     HF_MSGID_RE          = re.compile(HF_MSGID_PATTERN)
     HF_SUB_RE            = re.compile(HF_SUB_PATTERN)
     HF_XGMAIL_RECV_RE    = re.compile(HF_XGMAIL_RECV_PATTERN)
+    
+    HF_FROM_RE = re.compile(HF_FROM_PATTERN)
+    HF_TO_RE   = re.compile(HF_TO_PATTERN)
 
     ENCRYPTED_PATTERN = r"[\w+,\.]+crypt[\w,\.]*"
     ENCRYPTED_RE      = re.compile(ENCRYPTED_PATTERN)
@@ -92,6 +99,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         self._info_dir        = '%s/%s' % (a_storage_dir, GmailStorer.INFO_AREA)
         self._chats_dir       = '%s/%s' % (self._db_dir, GmailStorer.CHATS_AREA)
         self._bin_dir         = '%s/%s' % (a_storage_dir, GmailStorer.BIN_AREA)
+        
+        gmsql.GMSQL.connect('%s/meta.db' % (a_storage_dir))
 
         self._sub_chats_dir   = None
         self._sub_chats_inc   = -1
@@ -253,6 +262,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         subject = None
         msgid   = None
         x_gmail_recv = None
+        h_from = None
+        h_to = None
 
         # look for subject
         matched = GmailStorer.HF_SUB_RE.search(header_fields)
@@ -285,8 +296,16 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         matched = GmailStorer.HF_XGMAIL_RECV_RE.search(header_fields)
         if matched:
             x_gmail_recv = matched.group('received').strip()
+            
+        matched = GmailStorer.HF_FROM_RE.search(header_fields)
+        if matched:
+            h_from = matched.group('from').strip()
+        
+        matched = GmailStorer.HF_TO_RE.search(header_fields)
+        if matched:
+            h_to = matched.group('to').strip()
 
-        return subject, msgid, x_gmail_recv
+        return subject, msgid, x_gmail_recv, h_from, h_to
 
     def get_all_chats_gmail_ids(self):
         """
@@ -377,7 +396,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         with open(meta_path, 'w') as meta_desc:
             # parse header fields to extract subject and msgid
-            subject, msgid, received = self.parse_header_fields(
+            subject, msgid, received, h_from, h_to = self.parse_header_fields(
                 email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
 
             # need to convert labels that are number as string
@@ -406,6 +425,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             json.dump(meta_obj, meta_desc)
 
             meta_desc.flush()
+            
+            gmsql.GMSQL.store_email(email_info[imap_utils.GIMAPFetcher.GMAIL_ID], h_from, h_to, subject, email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE], labels)
 
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
 
@@ -716,3 +737,5 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
                 if os.path.exists(metadata_p):
                     os.remove(metadata_p)
+                    
+            gmsql.GMSQL.delete_email(a_id)
