@@ -48,8 +48,8 @@ def generate_permission_url():
     A URL that the user should visit in their browser.
   """
   params = {}
-  params['client_id']     = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_id", "1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com")
-  params['redirect_uri']  = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
+  params['client_id']     = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_id", "")
+  params['redirect_uri']  = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", '')
   params['scope']         = gmvault_utils.get_conf_defaults().get("GoogleOauth2","scope",'https://mail.google.com/')
   params['response_type'] = 'code'
 
@@ -251,8 +251,8 @@ class CredentialHelper(object):
         fields include 'access_token', 'expires_in', and 'refresh_token'.
       """
       params = {}
-      params['client_id'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_id", "1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com")
-      params['client_secret'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_secret", "IVkl_pglv5cXzugpmnRNqtT7")
+      params['client_id'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_id", "")
+      params['client_secret'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_secret", "")
       params['refresh_token'] = refresh_token
       params['grant_type'] = 'refresh_token'
 
@@ -289,10 +289,10 @@ class CredentialHelper(object):
         fields include 'access_token', 'expires_in', and 'refresh_token'.
         """
         params = {}
-        params['client_id'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_id", "1070918343777-0eecradokiu8i77qfo8e3stbi0mkrtog.apps.googleusercontent.com")
-        params['client_secret'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_secret", "IVkl_pglv5cXzugpmnRNqtT7")
+        params['client_id'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_id", "")
+        params['client_secret'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "gmvault_client_secret", "")
         params['code'] = authorization_code
-        params['redirect_uri'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", 'urn:ietf:wg:oauth:2.0:oob')
+        params['redirect_uri'] = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "redirect_uri", '')
         params['grant_type'] = 'authorization_code'
 
         account_base_url = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
