@@ -640,7 +640,7 @@ VERSION_PATTERN  = r'\s*conf_version=\s*(?P<version>\S*)\s*'
 VERSION_RE  = re.compile(VERSION_PATTERN)
 
 #list of version conf to not overwrite with the next
-VERSIONS_TO_PRESERVE = [ '1.9' ]
+VERSIONS_TO_PRESERVE = [ '1.9.1' ]
 
 def _get_version_from_conf(home_conf_file):
     """
@@ -684,12 +684,13 @@ def get_conf_filepath():
     home_conf_file = "%s/%s" % (get_home_dir_path(), CONF_FILE)
     
     if not os.path.exists(home_conf_file):
+        LOG.critical('Config file does not exist.')
         return _create_default_conf_file(home_conf_file)
     else:
         # check if the conf file needs to be replaced
         version = _get_version_from_conf(home_conf_file)
         if version not in VERSIONS_TO_PRESERVE:
-            LOG.debug("%s with version %s is too old, overwrite it with the latest file." \
+            LOG.critical("%s with version %s is too old, overwrite it with the latest file." \
                        % (home_conf_file, version))
             return _create_default_conf_file(home_conf_file)    
     
