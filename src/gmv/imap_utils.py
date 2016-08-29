@@ -709,8 +709,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
            This is for testing purpose and cannot be used with my own mailbox
         """
         
-        if self.login == "guillaume.aubert@gmail.com":
-            raise Exception("Error cannot activate erase_mailbox with %s" % (self.login))
+        raise Exception("Error cannot activate erase_mailbox with %s" % (self.login))
 
         LOG.info("Erase mailbox for account %s." % (self.login))
 
@@ -783,8 +782,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
            Push the data
         """  
         # protection against myself
-        if self.login == 'guillaume.aubert@gmail.com':
-            raise Exception("Cannot push to this account")
+        raise Exception("Cannot push to this account")
         
         the_timer = gmvault_utils.Timer()
         the_timer.start()
@@ -838,8 +836,7 @@ class GIMAPFetcher(object): #pylint:disable=R0902,R0904
            Push a complete email body 
         """
         #protection against myself
-        if self.login == 'guillaume.aubert@gmail.com':
-            raise Exception("Cannot push to this account")
+        raise Exception("Cannot push to this account")
     
         the_t = gmvault_utils.Timer()
         the_t.start()
