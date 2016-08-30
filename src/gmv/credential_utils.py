@@ -384,7 +384,7 @@ class CredentialHelper(object):
                     LOG.critical("Initiate interactive session to get OAuth2 token from Gmail.\n")
 
                 #interactive session with default browser initiated
-                access_token, refresh_token, validity, type = cls._get_oauth2_tokens(email, use_webbrowser = True)
+                access_token, refresh_token, validity, type = cls._get_oauth2_tokens(email, use_webbrowser = False)
 
                 if not access_token or not refresh_token:
                     raise Exception("Cannot get OAuth2 access token from Gmail. See Gmail error message")
