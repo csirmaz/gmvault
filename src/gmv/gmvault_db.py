@@ -254,22 +254,8 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
         return credential_utils.CredentialHelper.get_secret_key('%s/%s' % (a_info_dir, cls.ENCRYPTION_KEY_FILENAME))
 
     @classmethod
-    def parse_header_fields(cls, header_fields):
-        """
-           extract subject and message ids from the given header fields.
-           Additionally, convert subject byte string to unicode and then encode in utf-8
-        """
-        subject = None
-        msgid   = None
-        x_gmail_recv = None
-        h_from = None
-        h_to = None
-
-        # look for subject
-        matched = GmailStorer.HF_SUB_RE.search(header_fields)
-        if matched:
-            tempo = matched.group('subject').strip()
-            #guess encoding and convert to utf-8
+    def _ec_decode(cls, tempo):            
+            #guess encoding and convert to unicode
             u_tempo  = None
             encod    = "not found"
             try:
@@ -284,7 +270,28 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
                   #try utf-8
                   u_tempo = unicode(tempo, encoding="utf-8", errors='replace')
 
+            return u_tempo
+
+    @classmethod
+    def parse_header_fields(cls, header_fields):
+        """
+           extract subject and message ids from the given header fields.
+           Additionally, convert subject byte string to unicode and then encode in utf-8
+        """
+        subject = None
+        u_subject = None
+        msgid   = None
+        x_gmail_recv = None
+        h_from = None
+        h_to = None
+
+        # look for subject
+        matched = GmailStorer.HF_SUB_RE.search(header_fields)
+        if matched:
+            u_tempo = cls._ec_decode(matched.group('subject').strip())
+            #guess encoding and convert to utf-8
             if u_tempo:
+                u_subject = u_tempo
                 subject = u_tempo.encode('utf-8')
 
         # look for a msg id
@@ -299,13 +306,13 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
             
         matched = GmailStorer.HF_FROM_RE.search(header_fields)
         if matched:
-            h_from = matched.group('from').strip()
+            h_from = cls._ec_decode(matched.group('from').strip())
         
         matched = GmailStorer.HF_TO_RE.search(header_fields)
         if matched:
-            h_to = matched.group('to').strip()
+            h_to = cls._ec_decode(matched.group('to').strip())
 
-        return subject, msgid, x_gmail_recv, h_from, h_to
+        return subject, u_subject, msgid, x_gmail_recv, h_from, h_to
 
     def get_all_chats_gmail_ids(self):
         """
@@ -396,7 +403,7 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
         with open(meta_path, 'w') as meta_desc:
             # parse header fields to extract subject and msgid
-            subject, msgid, received, h_from, h_to = self.parse_header_fields(
+            subject, u_subject, msgid, received, h_from, h_to = self.parse_header_fields(
                 email_info[imap_utils.GIMAPFetcher.IMAP_HEADER_FIELDS_KEY])
 
             # need to convert labels that are number as string
@@ -426,7 +433,15 @@ class GmailStorer(object): #pylint:disable=R0902,R0904,R0914
 
             meta_desc.flush()
             
-            gmsql.GMSQL.store_email(email_info[imap_utils.GIMAPFetcher.GMAIL_ID], h_from, h_to, subject, email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE], labels)
+            gmsql.GMSQL.store_email(
+                email_info[imap_utils.GIMAPFetcher.GMAIL_ID],
+                email_info[imap_utils.GIMAPFetcher.GMAIL_THREAD_ID], 
+                h_from, 
+                h_to, 
+                u_subject, # unicode 
+                email_info[imap_utils.GIMAPFetcher.IMAP_INTERNALDATE], 
+                labels
+            )
 
         return email_info[imap_utils.GIMAPFetcher.GMAIL_ID]
 

@@ -1,11 +1,11 @@
 
 import sqlite3
-# import pprint;
+import pprint;
 
 class GMSQL:
 
     conn = None
-    # pp = pprint.PrettyPrinter(indent=4)
+    pp = pprint.PrettyPrinter(indent=4)
 
     @classmethod
     def connect(cls, file):
@@ -16,15 +16,16 @@ class GMSQL:
     def init(cls):
        c = cls.conn.cursor()
        # TODO
-       # create table emails(gmid text primary key, gmfrom text, gmto text,subject text, date text,labels text)without rowid;
+       # create table emails(gmid text primary key, threadid text, gmfrom text, gmto text,subject text, date text,labels text)without rowid;
        cls.conn.commit()
     
     @classmethod    
-    def store_email(cls, id, h_from, h_to, subject, date, labels):
+    def store_email(cls, id, threadid, h_from, h_to, subject, date, labels):
         cls.delete_email(id)
         c = cls.conn.cursor()
         args = (
-                id, 
+                id,
+                threadid,
                 h_from if h_from is not None else '', 
                 h_to if h_to is not None else '', 
                 subject, 
@@ -32,7 +33,7 @@ class GMSQL:
                 ",".join(labels)
         )
         # cls.pp.pprint(args)
-        c.execute('insert into emails (gmid,gmfrom,gmto,subject,date,labels) values (?,?,?,?,?,?)', args)
+        c.execute('insert into emails (gmid,threadid,gmfrom,gmto,subject,date,labels) values (?,?,?,?,?,?,?)', args)
         cls.conn.commit()
         
     @classmethod
