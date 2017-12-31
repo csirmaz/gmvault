@@ -259,13 +259,13 @@ class CredentialHelper(object):
       account_base_url = gmvault_utils.get_conf_defaults().get("GoogleOauth2", "google_accounts_base_url", 'https://accounts.google.com')
 
       request_url = '%s/%s' % (account_base_url, 'o/oauth2/token')
-
+      
       try:
         response = urllib2.urlopen(request_url, urllib.urlencode(params)).read()
       except Exception, err: #pylint: disable-msg=W0703
-        LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s.\n" % (request_url))
+        LOG.critical("Error: Problems when trying to connect to Google oauth2 endpoint: %s.\nMaybe you changed your password? Rename/remove the auth token file that is named after the email address, and try again to refresh the token." % (request_url))
         raise err
-
+        
       json_resp = json.loads(response)
 
       LOG.debug("json_resp = %s" % (json_resp))
